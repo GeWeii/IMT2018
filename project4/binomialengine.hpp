@@ -36,6 +36,7 @@
 #include <ql/termstructures/yield/flatforward.hpp>
 #include <ql/termstructures/volatility/equityfx/blackconstantvol.hpp>
 
+using std::vector;
 namespace QuantLib {
 
     //! Pricing engine for vanilla options using binomial trees
@@ -55,8 +56,8 @@ namespace QuantLib {
       public:
         BinomialVanillaEngine_2(
              const boost::shared_ptr<GeneralizedBlackScholesProcess>& process,
-             Size timeSteps)
-        : process_(process), timeSteps_(timeSteps) {
+             Size timeSteps, bool mustSmoothen = false)
+        : process_(process), timeSteps_(timeSteps), mustSmoothen_(mustSmoothen) {
             QL_REQUIRE(timeSteps >= 2,
                        "at least 2 time steps required, "
                        << timeSteps << " provided");
@@ -66,6 +67,7 @@ namespace QuantLib {
       private:
         boost::shared_ptr<GeneralizedBlackScholesProcess> process_;
         Size timeSteps_;
+        bool mustSmoothen_;
     };
 
 
@@ -123,6 +125,28 @@ namespace QuantLib {
         DiscretizedVanillaOption option(arguments_, *process_, grid);
 
         option.initialize(lattice, maturity);
+
+        if (mustSmoothen_){
+           /* vector<Real> s_penultimate(timeSteps_ - 1);
+            for (int i = 0; i < timeSteps_ - 1; i++){
+                s_penultimate[i] = lattice -> underlying(timeSteps_ - 1, i);
+            }*/
+
+            // code B&S for pricing
+
+            //vector<Date> ex_dates(timeSteps_);
+            //ex_dates = arguments_.exercise -> dates();
+            Real tau = rfdc.yearFraction(arguments_.exercise -> dates()[arguments_.exercise -> dates().size()-2], maturityDate);
+            Real discount = std::exp((r-q) * tau);
+            Real stdDev = v * std::sqrt(tau);
+            //vector<Real> val_penultimate(timeSteps_ - 1);
+            option.partialRollback(grid[timeSteps_ - 1]);
+            for (int i = 0; i < timeSteps_ - 1; i++){
+                option.values()[i] = blackFormula(payoff->optionType(), payoff->strike(), lattice -> underlying(timeSteps_ - 1, i)* discount, stdDev, discount);
+
+            }
+            
+        }
 
         // Partial derivatives calculated from various points in the
         // binomial tree 
