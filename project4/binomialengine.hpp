@@ -136,13 +136,14 @@ namespace QuantLib {
 
             //vector<Date> ex_dates(timeSteps_);
             //ex_dates = arguments_.exercise -> dates();
-            Real tau = rfdc.yearFraction(arguments_.exercise -> dates()[arguments_.exercise -> dates().size()-2], maturityDate);
+            //Real tau = rfdc.yearFraction(arguments_.exercise -> dates()[arguments_.exercise -> dates().size()-2], maturityDate);
+            Real tau = grid.dt(timeSteps_ - 1);
             Real discount = std::exp(-r * tau);
             Real stdDev = v * std::sqrt(tau);
             //vector<Real> val_penultimate(timeSteps_ - 1);
-            option.partialRollback(grid[timeSteps_ - 1]);
+            option.rollback(grid[lattice->size(timeSteps_-1)]);
             for (int i = 0; i < timeSteps_ - 1; i++){
-                option.values()[i] = blackFormula(payoff->optionType(), payoff->strike(), lattice -> underlying(timeSteps_ - 1, i)*std::exp((r-q) * tau) , stdDev, discount);
+                option.values()[i] = blackFormula(payoff->optionType(), payoff->strike(), lattice -> underlying(lattice->size(timeSteps_-1), i)*std::exp((r-q) * tau) , stdDev, discount);
                 
             }
             option.adjustValues();
