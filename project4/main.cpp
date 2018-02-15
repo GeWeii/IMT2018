@@ -103,7 +103,7 @@ int main() {
         //method = "Binomial Cox-Ross-Rubinstein";
         
         std::vector<Size> timeSteps;
-        Size timeStep0 = 360;
+        Size timeStep0 = 400;
         for (int i = 0; i < 10; i++ ){
             timeSteps.push_back(timeStep0 + i);
         }

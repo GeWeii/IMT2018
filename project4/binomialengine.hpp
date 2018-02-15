@@ -141,9 +141,9 @@ namespace QuantLib {
             Real discount = std::exp(-r * tau);
             Real stdDev = v * std::sqrt(tau);
             //vector<Real> val_penultimate(timeSteps_ - 1);
-            option.rollback(grid[lattice->size(timeSteps_-1)]);
+            option.rollback(grid[timeSteps_-1]);
             for (int i = 0; i < lattice->size(timeSteps_-1); i++){
-                option.values()[i] = blackFormula(payoff->optionType(), payoff->strike(), lattice -> underlying(lattice->size(timeSteps_-1), i)*std::exp((r-q) * tau) , stdDev, discount);
+                option.values()[i] = blackFormula(payoff->optionType(), payoff->strike(), lattice -> underlying(timeSteps_-1, i)*std::exp((r-q) * tau) , stdDev, discount);
                 
             }
             option.adjustValues();
